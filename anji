@@ -1,1 +1,13 @@
-echo"Hello this is anji"
+pipeline {
+    agent any
+
+    stages {
+        stage('Deploy') {
+            steps {
+                
+                s3Upload consoleLogLevel: 'INFO', dontSetBuildResultOnFailure: false, dontWaitForConcurrentBuildCompletion: false, entries: [[bucket: 'anji333', excludedFile: '', flatten: false, gzipFiles: false, keepForever: false, managedArtifacts: false, noUploadOnFailure: false, selectedRegion: 'ap-south-1', showDirectlyInBrowser: false, sourceFile: '**/*', storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]], pluginFailureResultConstraint: 'FAILURE', profileName: 'anji333', userMetadata: []
+                
+            }
+        }
+    }
+}
