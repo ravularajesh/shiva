@@ -1,0 +1,161 @@
+
+pipeline {
+    agent any
+    
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_DEFAULT_REGION    = 'ap-south-1' 
+        S3_BUCKET_NAME        = 'badra3'
+    }
+
+    stages {
+        stage('Delete old folders from S3') {
+            steps {
+                script {
+                    // Get a list of all folders in the S3 bucket
+                    def s3Objects = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/ --recursive", returnStdout: true).trim().split('\n')
+
+                    // Filter out objects that are directories (folders)
+                    def folders = s3Objects.findAll { it.endsWith('/') }
+
+                    // Get the current date and time in the format used by the S3 bucket
+                    def currentDate = new Date().format("yyyy-MM-dd")
+
+                    // Calculate the date 5 days ago
+                    def fiveDaysAgo = new Date() - 5
+
+                    // Iterate through the folders and delete those older than 5 days
+                    folders.each { folder ->
+                        // Extract the folder creation date from the S3 ls output
+                        def folderCreationDate = folder.split(/\s+/)[0]
+
+                        // Compare the folder creation date with the date 5 days ago
+                        if (folderCreationDate < fiveDaysAgo.format("yyyy-MM-dd")) {
+                            echo "Deleting folder: ${folder}"
+                            sh "aws s3 rm s3://${S3_BUCKET_NAME}/${folder} --recursive"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'your_aws_region'
+        S3_BUCKET_NAME = 'your_s3_bucket_name'
+        DAYS_TO_KEEP = 5
+    }
+
+    stages {
+        stage('Delete old folders from S3') {
+            steps {
+                script {
+                    // Get the current date and calculate the date 5 days ago
+                    def currentDate = sh(script: 'date -u "+%Y-%m-%d"', returnStdout: true).trim()
+                    def cutoffDate = sh(script: "date -u -d '-${DAYS_TO_KEEP} days' '+%Y-%m-%d'", returnStdout: true).trim()
+
+                    // List all folders in the S3 bucket
+                    def s3Folders = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/ --recursive | awk -F'/' '{print \$1}' | sort | uniq", returnStdout: true).trim().split('\n')
+
+                    // Delete folders older than the cutoff date
+                    for (def folder in s3Folders) {
+                        def folderDate = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/${folder}/ --recursive | sort | tail -n 1 | awk '{print \$1}'", returnStdout: true).trim()
+                        
+                        if (folderDate < cutoffDate) {
+                            echo "Deleting folder: ${folder}"
+                            sh "aws s3 rm s3://${S3_BUCKET_NAME}/${folder}/ --recursive"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_DEFAULT_REGION = 'ap-south-1' 
+        S3_BUCKET_NAME = 'badra3'
+        DAYS_TO_KEEP = 5
+    }
+
+    stages {
+        stage('Delete old folders from S3') {
+            steps {
+                script {
+                    // Get the current date and calculate the date 5 days ago
+                    def currentDate = sh(script: 'date -u "+%Y%m%d"', returnStdout: true).trim()
+                    def cutoffDate = sh(script: "date -u -d -'${DAYS_TO_KEEP} days' '+%Y%m%d'", returnStdout: true).trim()
+
+                    // List all folders in the S3 bucket
+                    def s3Folders = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/ --recursive | awk -F'/' '{print \$NF}' | sort | uniq", returnStdout: true).trim().split('\n')
+
+                    // Delete folders older than the cutoff date
+                    for (def folder in s3Folders) {
+                        def folderDate = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/${folder}/ --recursive | sort | tail -n 1 | awk '{print \$1, \$2}'", returnStdout: true).trim()
+                        
+                        if (folderDate < cutoffDate) {
+                            echo "Deleting folder: ${folder}"
+                            sh "aws s3 rm s3://${S3_BUCKET_NAME}/${folder}/ --recursive"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_DEFAULT_REGION = 'ap-south-1' 
+        S3_BUCKET_NAME = 'badra3'
+        DAYS_TO_KEEP = 5
+    }
+
+    stages {
+        stage('Delete old folders from S3') {
+            steps {
+                script {
+                    // Get the current date and calculate the date 5 days ago
+                    def currentDate = sh(script: 'date -u "+%Y%m%d"', returnStdout: true).trim()
+                    def cutoffDate = sh(script: "date -u -d '-${DAYS_TO_KEEP} days' '+%Y%m%d'", returnStdout: true).trim()
+
+                    // List all folders in the S3 bucket
+                    def s3Folders = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/ --recursive | awk '{print \$4}' | sort | uniq", returnStdout: true).trim().split('\n')
+
+                    // Delete folders older than the cutoff date
+                    for (def folder in s3Folders) {
+                        def folderDate = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/${folder} --recursive | sort | tail -n 1 | awk '{print \$1}'", returnStdout: true).trim()
+
+                        if (folderDate < cutoffDate) {
+                            echo "Deleting folder: ${folder}"
+                            sh "aws s3 rm s3://${S3_BUCKET_NAME}/${folder} --recursive"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
