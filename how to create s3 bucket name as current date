@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+
+    environment {
+        S3_BUCKET = 'shyamala3'
+    }
+
+    stages {
+        stage('Create Folder with Current Date') {
+            steps {
+                script {
+                    def currentDate = new Date().format("yyyyMMdd")
+                    def folderName = "${currentDate}"
+
+                    // Use AWS CLI to create an empty folder in S3
+                    sh "aws s3api put-object --bucket ${S3_BUCKET} --key ${folderName}/"
+                }
+            }
+        }
+    }
+}
