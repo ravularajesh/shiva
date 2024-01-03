@@ -1,0 +1,21 @@
+
+pipeline {
+    agent any
+    
+    environment {
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        BUCKET_NAME = 'badra3'
+    }
+
+    stages {
+        stage('Create Folder with Current Date') {
+            steps {
+                script {
+                    def currentDate = new Date().format('yyyyMMdd')
+                    sh "aws s3 cp --recursive ./ s3://${BUCKET_NAME}/${currentDate}/"
+                }
+            }
+        }
+
+    }
+}
