@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        S3_BUCKET_NAME = 'badra3'
+        Days = 3
+    }
+
+    stages {
+        stage('Delete S3 Folders') {
+            steps {
+                script {
+                    // Convert Days to an integer
+                    def daysInt = Days.toInteger()
+
+                    // Calculate the date (yyyyMMdd) 3 days ago
+                    def currentDate = new Date()
+                    def threeDaysAgo = currentDate - daysInt
+                    def formattedDate = threeDaysAgo.format("yyyyMMdd")
+
+                    // List all folders in the S3 bucket
+                    def folders = sh(script: "aws s3 ls s3://${S3_BUCKET_NAME}/ --recursive --directories-only | awk '{print \$2}'", returnStdout: true).trim().split('\n')
+                    echo "${folders}"
+                    // Filter folders based on the date in the folder name
+                    def foldersToDelete = folders.findAll { folder ->
+                        
+                        def folderDate = folder.replaceAll('/', '')
+                        
+                        
+                        return folderDate < formattedDate
+                        echo "${folderDate}"
+                        
+                    }
+                    
+
+                    // Delete each folder
+                    foldersToDelete.each { folder ->
+                        sh "aws s3 rm s3://${S3_BUCKET_NAME}/${folder} --recursive"
+                    }
+                }
+            }
+        }
+    }
+}
