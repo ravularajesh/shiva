@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = 'qpe+gBC+FX9dzCs1S+s38rKKWW8XbuJHpx1iPsws'
+        AWS_DEFAULT_REGION    = 'ap-south-1' // replace with your AWS region
+        S3_BUCKET             = 'badra3' // replace with your S3 bucket name
+    }
+
+    stages {
+        stage('Delete Old Folders') {
+            steps {
+                script {
+                    // Calculate the date for three days ago in the desired format
+                    def threeDaysAgo = new Date().minus(3).format("yyyyMMdd") // Adjusted format
+
+                    echo "Date: ${threeDaysAgo}"
+
+                    // List all folders in the S3 bucket
+                    def s3Folders = sh(script: "aws s3 ls s3://${env.S3_BUCKET}/ --recursive | grep '/' | awk '{print \$4}'", returnStdout: true).trim().split('\n')
+                    echo "The folders are : ${s3Folders}"
+
+                    // Filter out folders that are not older than three days
+                    def oldFolders = s3Folders.findAll { folder ->
+                        def folderDate = folder.split('/')[0]
+                        folderDate < threeDaysAgo
+                    }
+
+                    echo "Old folders to delete: ${oldFolders}"
+
+                    // Delete the old folders
+                    oldFolders.each { folder ->
+                        sh "aws s3 rm s3://${env.S3_BUCKET}/${folder} --recursive"
+                    }
+                }
+            }
+        }
+    }
+}

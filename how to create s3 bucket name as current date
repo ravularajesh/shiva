@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = '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'
+        AWS_DEFAULT_REGION    = 'ap-south-1'
+        S3_BUCKET_NAME        = 'badra3'
+    }
+
+    stages {
+        stage('Create S3 Folder') {
+            steps {
+                script {
+                    def currentDate = new Date().format("yyyyMMdd")
+                    def s3FolderName = "${currentDate}"
+
+                    sh "aws s3api put-object --bucket ${S3_BUCKET_NAME} --key ${s3FolderName}/"
+                }
+            }
+        }
+    }
+}
+
+
+
+or
+
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = 'AKIAVGMMERS6D362IHHV'
+        AWS_SECRET_ACCESS_KEY = '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'
+        S3_BUCKET_NAME        = 'badra3'
+    }
+
+    stages {
+        stage('Create S3 Folder') {
+            steps {
+                script {
+                    def currentDate = sh(script: 'date +%Y%m%d', returnStdout: true).trim()
+                    def s3Folder = "s3://${S3_BUCKET_NAME}/${currentDate}/"
+
+                    sh "aws s3api put-object --bucket ${S3_BUCKET_NAME} --key ${currentDate}/"
+                }
+            }
+        }
+    }
+}
